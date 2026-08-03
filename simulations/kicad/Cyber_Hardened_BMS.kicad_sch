@@ -1,0 +1,188 @@
+(kicad_sch
+  (version 20231120)
+  (generator "eeschema")
+  (paper "A2")
+  (title_block
+    (title "Self-Healing Cyber-Hardened BMS — Master Schematic")
+    (date "2026-07-31")
+    (rev "1.0")
+    (company "GCET EEE Department")
+    (comment 1 "7-Layer Security BMS with Digital Twin")
+    (comment 2 "ESP32 + BQ76920 + SN65HVD230 + 16S Li-ion")
+  )
+
+  ;; ── U1: ESP32-WROOM-32D (BMS Master) ─────────────────────────────────────
+  (symbol (lib_id "MCU_Espressif:ESP32-WROOM-32D") (at 100 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "U1" (at 100 85 0))
+    (property "Value" "ESP32-WROOM-32D" (at 100 115 0))
+    (property "Footprint" "RF_Module:ESP32-WROOM-32" (at 100 120 0))
+    (property "Datasheet" "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf" (at 100 125 0))
+  )
+
+  ;; ── U2: TI BQ76920 Battery Monitor AFE ───────────────────────────────────
+  (symbol (lib_id "Battery_Management:BQ76920") (at 300 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "U2" (at 300 85 0))
+    (property "Value" "BQ76920" (at 300 115 0))
+    (property "Footprint" "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm" (at 300 120 0))
+    (property "Datasheet" "https://www.ti.com/lit/ds/symlink/bq76920.pdf" (at 300 125 0))
+  )
+
+  ;; ── U3: SN65HVD230 CAN Transceiver ───────────────────────────────────────
+  (symbol (lib_id "Interface_CAN_LIN:SN65HVD230") (at 500 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "U3" (at 500 85 0))
+    (property "Value" "SN65HVD230" (at 500 115 0))
+    (property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" (at 500 120 0))
+    (property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn65hvd230.pdf" (at 500 125 0))
+  )
+
+  ;; ── U4: AMS1117-3.3 LDO Voltage Regulator ────────────────────────────────
+  (symbol (lib_id "Regulator_Linear:AMS1117-3.3") (at 700 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "U4" (at 700 85 0))
+    (property "Value" "AMS1117-3.3" (at 700 115 0))
+    (property "Footprint" "Package_TO_SOT_SMD:SOT-223-3_TabPin2" (at 700 120 0))
+    (property "Datasheet" "https://www.advanced-monolithic.com/pdf/ds1117.pdf" (at 700 125 0))
+  )
+
+  ;; ── U5: SSD1306 OLED Display ──────────────────────────────────────────────
+  (symbol (lib_id "Display:SSD1306_I2C") (at 100 250 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "U5" (at 100 235 0))
+    (property "Value" "SSD1306-OLED-128x64" (at 100 265 0))
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (at 100 270 0))
+    (property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf" (at 100 275 0))
+  )
+
+  ;; ── R1, R2: CAN Bus 60-Ohm Split Termination ──────────────────────────────
+  (symbol (lib_id "Device:R") (at 550 200 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "R1" (at 550 185 0))
+    (property "Value" "60" (at 550 215 0))
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 550 220 0))
+  )
+  (symbol (lib_id "Device:R") (at 550 240 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "R2" (at 550 225 0))
+    (property "Value" "60" (at 550 255 0))
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 550 260 0))
+  )
+
+  ;; ── C1: CAN Split Termination Cap ─────────────────────────────────────────
+  (symbol (lib_id "Device:C") (at 580 220 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "C1" (at 580 205 0))
+    (property "Value" "4.7nF" (at 580 235 0))
+    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 580 240 0))
+  )
+
+  ;; ── C2, C3: ESP32 Power Decoupling ────────────────────────────────────────
+  (symbol (lib_id "Device:C") (at 120 150 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "C2" (at 120 135 0))
+    (property "Value" "100uF" (at 120 165 0))
+    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric" (at 120 170 0))
+  )
+  (symbol (lib_id "Device:C") (at 145 150 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "C3" (at 145 135 0))
+    (property "Value" "100nF" (at 145 165 0))
+    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 145 170 0))
+  )
+
+  ;; ── C4, C5: BQ76920 Decoupling ────────────────────────────────────────────
+  (symbol (lib_id "Device:C") (at 320 150 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "C4" (at 320 135 0))
+    (property "Value" "10uF" (at 320 165 0))
+    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric" (at 320 170 0))
+  )
+  (symbol (lib_id "Device:C") (at 345 150 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "C5" (at 345 135 0))
+    (property "Value" "100nF" (at 345 165 0))
+    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 345 170 0))
+  )
+
+  ;; ── R3, R4: I2C Pull-ups (SDA, SCL) ──────────────────────────────────────
+  (symbol (lib_id "Device:R") (at 200 50 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "R3" (at 200 35 0))
+    (property "Value" "4.7k" (at 200 65 0))
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 200 70 0))
+  )
+  (symbol (lib_id "Device:R") (at 220 50 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "R4" (at 220 35 0))
+    (property "Value" "4.7k" (at 220 65 0))
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 220 70 0))
+  )
+
+  ;; ── R5: Shunt Current Sense Resistor ──────────────────────────────────────
+  (symbol (lib_id "Device:R_Small") (at 300 200 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "R5" (at 300 185 0))
+    (property "Value" "10m" (at 300 215 0))
+    (property "Footprint" "Resistor_SMD:R_2512_6332Metric" (at 300 220 0))
+  )
+
+  ;; ── J1: Battery Pack Connector (16S) ──────────────────────────────────────
+  (symbol (lib_id "Connector_Generic:Conn_01x08") (at 800 100 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "J1" (at 800 85 0))
+    (property "Value" "BATT_16S_CONN" (at 800 115 0))
+    (property "Footprint" "Connector_JST:JST_XH_B8B-XH-A_1x08_P2.50mm_Vertical" (at 800 120 0))
+  )
+
+  ;; ── J2: CAN Bus Connector ─────────────────────────────────────────────────
+  (symbol (lib_id "Connector_Generic:Conn_01x04") (at 800 200 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "J2" (at 800 185 0))
+    (property "Value" "CAN_BUS_CONN" (at 800 215 0))
+    (property "Footprint" "Connector_JST:JST_VH_B4B-VH-A_1x04_P3.96mm_Vertical" (at 800 220 0))
+  )
+
+  ;; ── J3: USB-to-UART Programming Header ────────────────────────────────────
+  (symbol (lib_id "Connector_Generic:Conn_01x06") (at 800 300 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "J3" (at 800 285 0))
+    (property "Value" "UART_PROG" (at 800 315 0))
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" (at 800 320 0))
+  )
+
+  ;; ── Q1-Q4: Cell Balancing MOSFETs (IRLML2502) ─────────────────────────────
+  (symbol (lib_id "Device:Q_NMOS_GSD") (at 420 200 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "Q1" (at 420 185 0))
+    (property "Value" "IRLML2502" (at 420 215 0))
+    (property "Footprint" "Package_TO_SOT_SMD:SOT-23" (at 420 220 0))
+    (property "Datasheet" "https://www.infineon.com/dgdl/irlml2502pbf.pdf?fileId=5546d462533600a40153559ef29e223d" (at 420 225 0))
+  )
+
+  ;; ── NTC1-NTC4: Thermistors for Cell Temperature (10k NTC) ─────────────────
+  (symbol (lib_id "Device:R_Thermistor_NTC") (at 650 200 0) (unit 1)
+    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (property "Reference" "NTC1" (at 650 185 0))
+    (property "Value" "10k_NTC" (at 650 215 0))
+    (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 650 220 0))
+  )
+
+  ;; ── Net ties (labels) ─────────────────────────────────────────────────────
+  (global_label "VCC_3V3" (shape input) (at 80 50 0))
+  (global_label "GND" (shape input) (at 80 170 0))
+  (global_label "CAN_TX" (shape output) (at 460 90 0))
+  (global_label "CAN_RX" (shape input) (at 460 95 0))
+  (global_label "CAN_H" (shape bidirectional) (at 590 90 0))
+  (global_label "CAN_L" (shape bidirectional) (at 590 95 0))
+  (global_label "I2C_SDA" (shape bidirectional) (at 160 90 0))
+  (global_label "I2C_SCL" (shape output) (at 160 95 0))
+  (global_label "ALERT" (shape input) (at 280 130 0))
+  (global_label "CELL_SEL_1" (shape output) (at 160 130 0))
+  (global_label "CELL_SEL_2" (shape output) (at 160 135 0))
+  (global_label "CELL_SEL_3" (shape output) (at 160 140 0))
+  (global_label "CELL_SEL_4" (shape output) (at 160 145 0))
+  (global_label "BATT_PACK_POS" (shape input) (at 760 100 0))
+  (global_label "BATT_PACK_NEG" (shape input) (at 760 110 0))
+)

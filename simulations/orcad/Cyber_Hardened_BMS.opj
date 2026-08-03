@@ -1,0 +1,52 @@
+(ExpressProject "Cyber_Hardened_BMS"
+  (ProjectVersion "19981106")
+  (SoftwareVersion "24.100000")
+  (ProjectType "Analog or A/D Mixed")
+  (Folder "Design Resources"
+    (Folder "Library"
+      (File "C:\Cadence\OrCAD_X_Pro\tools\capture\library\pspice\analog.olb"
+        (Type "Schematic Library"))
+      (File "C:\Cadence\OrCAD_X_Pro\tools\capture\library\pspice\source.olb"
+        (Type "Schematic Library"))
+      (File "C:\Cadence\OrCAD_X_Pro\tools\capture\library\pspice\sourcstm.olb"
+        (Type "Schematic Library"))
+      (File "C:\Cadence\OrCAD_X_Pro\tools\capture\library\pspice\special.olb"
+        (Type "Schematic Library")))
+    (NoModify)
+    (File ".\Cyber_Hardened_BMS.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (PSPICE_Regenerate_Netlist_Flag "FALSE")
+    (DOCKED "TRUE")
+    (DOCKING_POSITION "59420"))
+  (Folder "Layout")
+  (Folder "Outputs"
+    (File ".\Cyber_Hardened_BMS-PSpiceFiles\SCHEMATIC1\SCHEMATIC1.sim"
+      (Type "PSpice Simulation Profile")))
+  (Folder "PSpice Resources"
+    (Folder "Simulation Profiles"
+      (File ".\Cyber_Hardened_BMS-PSpiceFiles\SCHEMATIC1\transient.sim"
+        (Type "PSpice Simulation Profile")))
+    (Folder "Model Libraries"
+      (File ".\BMS_OrCAD_PSpice.cir"
+        (Type "PSpice Model Library"))
+      (Sort User))
+    (Folder "Stimulus Files"
+      (Sort User))
+    (Folder "Include Files"
+      (Sort User)))
+  (DefaultLibraryFolder "C:\Cadence\OrCAD_X_Pro\tools\capture\library")
+  (MPSSessionName "mksin")
+  (Folder "Logs")
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" "Library")
+      (Select "Design Resources"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -1 -1 0 200 0 591"))
+      (Tab 0))))

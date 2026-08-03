@@ -1,0 +1,57 @@
+* Proteus-compatible SPICE Netlist
+* Self-Healing Cyber-Hardened BMS — EKF 2RC Battery Model
+* Import this into Proteus 9 Pro via: Design > Netlist Compiler > SPICE
+* ─────────────────────────────────────────────────────────────
+
+.TITLE Self-Healing BMS Battery Model Simulation
+
+* ── Battery Pack Model (2RC Thevenin Equivalent) ─────────────
+* Represents one 4S sub-module of the 16S Li-ion pack
+* Nominal: 14.8V (4 x 3.7V), Capacity 2.5Ah
+
+V_OCV N_OCV 0 DC 14.8 AC 0
+*   V_OCV simulates Open Circuit Voltage at 80% SoC
+
+R_SERIES N_OCV N_R1_A 0.1
+*   Internal ohmic resistance = 100 mOhm for 4S string
+
+R_1 N_R1_A N_C1_P 0.05
+C_1 N_C1_P 0 5000UF IC=14.6
+*   Short-time polarisation RC pair (tau = 250s)
+
+R_2 N_C1_P N_C2_P 0.02
+C_2 N_C2_P 0 1000UF IC=14.6
+*   Long-time double-layer RC pair (tau = 20s)
+
+R_TERM N_C2_P N_VOUT 0.001
+*   PCB trace resistance
+
+* ── Load: UDDS Drive Cycle Current Profile ───────────────────
+I_LOAD N_VOUT 0 PWL(
++ 0      0
++ 5      5
++ 10     10
++ 15     5
++ 20     2
++ 25     8
++ 30     3
++ 35     0)
+
+* ── EKF Observation: Shunt Current Sense ─────────────────────
+R_SHUNT N_C2_P N_SHUNT_REF 0.01
+*   10 mOhm shunt resistor for current measurement
+*   Voltage across R_SHUNT proportional to current (I = V/R)
+
+* ── Attack Injection Test Vector ─────────────────────────────
+* Uncomment below to simulate voltage spoofing attack:
+* V_ATTACK N_VOUT 0 DC 12.0
+*   This injects 12.0V (fake depleted reading) at N_VOUT
+
+* ── Analysis Commands ────────────────────────────────────────
+.TRAN 0.1 30 0 0.1
+.PROBE V(N_VOUT) V(N_C1_P) V(N_SHUNT_REF) I(R_SHUNT)
+.MEASURE TRAN Vterm_avg AVG V(N_VOUT) FROM 5 TO 30
+.MEASURE TRAN I_peak MAX I(R_SHUNT) FROM 0 TO 30
+.OPTIONS RELTOL=0.001 ABSTOL=1N VNTOL=1M ITL4=100
+
+.END

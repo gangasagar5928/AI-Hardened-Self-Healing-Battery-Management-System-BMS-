@@ -1,0 +1,8 @@
+* PSpice Simulation Profile: transient
+* Project: Cyber_Hardened_BMS
+* Analysis: Time Domain (Transient) 0 to 30s step 0.01s
+
+.TRAN 0.01 30 0 0.01
+.PROBE V(N_3V3) V(N_CANH) V(N_CANL) V(N_TEMP1) V(N_SHUNT_OUT)
+.OPTIONS RELTOL=0.001 ABSTOL=1N VNTOL=1M ITL4=100
+.INC ".\BMS_OrCAD_PSpice.cir"

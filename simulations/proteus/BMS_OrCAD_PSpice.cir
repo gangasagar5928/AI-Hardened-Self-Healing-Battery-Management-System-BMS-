@@ -1,0 +1,74 @@
+* OrCAD X Pro+ / PSpice Compatible SPICE Netlist
+* Self-Healing BMS — CAN Bus + Cell Balancing + Power Supply
+* Import: File > Import > SPICE Netlist
+* ─────────────────────────────────────────────────────────────
+
+.TITLE Cyber-Hardened BMS Full Analogue Simulation
+
+*************************************************************
+* SUBCIRCUIT: 4S Passive Cell Balancing (BQ76920 abstraction)
+*************************************************************
+.SUBCKT PASSIVE_BALANCER VC1 VC2 VC3 VC4 GND
+* Each cell connected through 100-Ohm balancing resistor
+* MOSFET gates driven by BQ76920 CELL_SEL pins (logic 3.3V)
+R_B1 VC1 GND 100
+R_B2 VC2 GND 100
+R_B3 VC3 GND 100
+R_B4 VC4 GND 100
+.ENDS
+
+*************************************************************
+* SUBCIRCUIT: CAN Bus Differential Driver
+*************************************************************
+.SUBCKT CAN_DRIVER TXD CAN_H CAN_L VCC GND
+* Simplified CAN transceiver (SN65HVD230 abstracted)
+R_DRV_H CAN_H TXD 25
+R_DRV_L CAN_L TXD 25
+R_TERM CAN_H CAN_L 120
+.ENDS
+
+*************************************************************
+* MAIN CIRCUIT
+*************************************************************
+
+* ── Power Supply (5V USB → 3.3V LDO) ─────────────────────
+V_USB N_5V 0 DC 5
+C_IN N_5V 0 10UF
+R_DROPOUT N_5V N_3V3 1.2
+*   Approximates AMS1117-3.3 voltage drop at 100mA
+C_OUT N_3V3 0 100UF
+R_LOAD_ESP N_3V3 0 33
+*   ESP32 equivalent load at 100mA
+
+* ── Battery Pack (4S sub-module for bench) ────────────────
+V_CELL1 N_C1P N_C1N DC 3.7
+V_CELL2 N_C2P N_C1N DC 3.8
+V_CELL3 N_C3P N_C2N DC 3.9
+V_CELL4 N_VBAT N_C3N DC 3.7
+*   4S string: total ~14.8V nominal
+
+* ── NTC Thermistor Temperature Sensing ─────────────────────
+R_NTC1 N_3V3 N_TEMP1 10K
+*   10k NTC at 25°C, Steinhart-Hart B=3950
+R_PULL1 N_TEMP1 0 10K
+*   Voltage divider with 10k pull-down
+
+* ── Cell Balancing Resistors ──────────────────────────────
+X_BAL N_C1P N_C2P N_C3P N_VBAT 0 PASSIVE_BALANCER
+
+* ── CAN Bus ───────────────────────────────────────────────
+V_TXD N_TXD 0 PULSE(0 3.3 0 10N 10N 1U 2U)
+X_CAN N_TXD N_CANH N_CANL N_3V3 0 CAN_DRIVER
+
+* ── Shunt Current Sense ────────────────────────────────────
+R_SHUNT N_VBAT N_SHUNT_OUT 0.01
+*   10 mOhm shunt: 1A → 10mV
+
+* ── Analysis Commands ─────────────────────────────────────
+.TRAN 0.1 10 0 0.01
+.PROBE V(N_3V3) V(N_CANH) V(N_CANL) V(N_TEMP1) V(N_SHUNT_OUT)
+.MEASURE TRAN VCC_avg AVG V(N_3V3) FROM 1 TO 10
+.MEASURE TRAN CAN_diff_swing PP V(N_CANH) FROM 0 TO 10
+.OPTIONS RELTOL=0.001
+
+.END

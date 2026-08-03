@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber-Hardened BMS — 5-Layer Security Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg:       #000000;
+    --surface:  #0a0a0a;
+    --card:     #111111;
+    --border:   #1f1f1f;
+    --blue:     #0a84ff;
+    --green:    #30d158;
+    --red:      #ff453a;
+    --orange:   #ff9f0a;
+    --purple:   #bf5af2;
+    --teal:     #5ac8fa;
+    --text:     #f5f5f7;
+    --sub:      #86868b;
+    --dim:      #48484a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── Scroll snap container ── */
+  .deck {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  .deck::-webkit-scrollbar { display: none; }
+
+  /* ── Base slide ── */
+  .slide {
+    height: 100vh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 48px;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Gradient background orbs ── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-size: clamp(36px, 5vw, 68px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    background: linear-gradient(160deg, #fff 30%, #8e8e93 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    max-width: 900px;
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 400;
+    color: var(--sub);
+    max-width: 680px;
+    line-height: 1.5;
+  }
+
+  .big-stat {
+    font-size: clamp(72px, 12vw, 140px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 16px 0;
+  }
+  .big-stat.good  { color: var(--green); }
+  .big-stat.bad   { color: var(--red); }
+
+  .stat-label {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--sub);
+    max-width: 560px;
+    line-height: 1.4;
+  }
+
+  /* ── Card grid ── */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    width: 100%;
+    max-width: 1080px;
+    margin-top: 36px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 36px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: left;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+
+  .card-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .card-num {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--blue);
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--sub);
+    line-height: 1.55;
+  }
+
+  /* ── Security layer stack ── */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 760px;
+    margin-top: 32px;
+  }
+
+  .layer-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    text-align: left;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .layer-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 16px 0 0 16px;
+    background: var(--layer-color, var(--blue));
+  }
+  .layer-row:hover {
+    transform: translateX(4px);
+    border-color: var(--layer-color, var(--blue));
+  }
+
+  .layer-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--layer-color, var(--blue));
+    min-width: 36px;
+  }
+  .layer-body { flex: 1; }
+  .layer-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .layer-detail {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.4;
+  }
+  .layer-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.07);
+    color: var(--layer-color, var(--blue));
+    white-space: nowrap;
+  }
+
+  /* ── Architecture flow diagram ── */
+  .arch-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-top: 32px;
+  }
+  .arch-node {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 280px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .arch-node.highlight { border-color: var(--blue); color: var(--blue); }
+  .arch-node.security  { border-color: var(--purple); }
+  .arch-node.ml        { border-color: var(--orange); }
+  .arch-node.math      { border-color: var(--teal); }
+  .arch-node.hw        { border-color: var(--green); }
+  .arch-arrow {
+    font-size: 22px;
+    color: var(--dim);
+    line-height: 1;
+    padding: 2px 0;
+  }
+  .arch-split {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .arch-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Formula pill ── */
+  .formula {
+    display: inline-block;
+    background: rgba(10,132,255,0.12);
+    border: 1px solid rgba(10,132,255,0.3);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 600;
+    color: var(--blue);
+    margin: 20px 0;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Timeline / steps ── */
+  .steps {
+    display: flex;
+    gap: 0;
+    max-width: 980px;
+    margin-top: 36px;
+    position: relative;
+  }
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .step-dot {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--blue);
+  }
+  .step-text {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+    max-width: 130px;
+    line-height: 1.4;
+  }
+  .step-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    max-width: 140px;
+  }
+
+  /* ── Comparison table ── */
+  .compare-table {
+    width: 100%;
+    max-width: 860px;
+    border-collapse: collapse;
+    margin-top: 32px;
+    font-size: 15px;
+  }
+  .compare-table th {
+    padding: 14px 18px;
+    background: #111;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    color: var(--sub);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .compare-table td {
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .compare-table tr:hover td { background: #111; }
+  .compare-table .good { color: var(--green); font-weight: 600; }
+  .compare-table .bad  { color: var(--red);   font-weight: 600; }
+
+  /* ── Nav ── */
+  #nav-hint {
+    position: fixed;
+    bottom: 22px;
+    right: 28px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  /* ── Progress bar ── */
+  #progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--blue);
+    transition: width 0.3s ease;
+    z-index: 200;
+  }
+
+  /* ── Slide counter ── */
+  #counter {
+    position: fixed;
+    top: 18px;
+    right: 24px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dim);
+    z-index: 100;
+  }
+
+  /* ── Chip / tag ── */
+  .chip {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin: 4px;
+  }
+  .chip-blue   { background: rgba(10,132,255,0.15);  color: var(--blue);   border: 1px solid rgba(10,132,255,0.3);  }
+  .chip-green  { background: rgba(48,209,88,0.15);   color: var(--green);  border: 1px solid rgba(48,209,88,0.3);  }
+  .chip-orange { background: rgba(255,159,10,0.15);  color: var(--orange); border: 1px solid rgba(255,159,10,0.3); }
+  .chip-red    { background: rgba(255,69,58,0.15);   color: var(--red);    border: 1px solid rgba(255,69,58,0.3);  }
+  .chip-purple { background: rgba(191,90,242,0.15);  color: var(--purple); border: 1px solid rgba(191,90,242,0.3); }
+  .chip-teal   { background: rgba(90,200,250,0.15);  color: var(--teal);   border: 1px solid rgba(90,200,250,0.3); }
+
+  /* responsive */
+  @media (max-width: 768px) {
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .steps { flex-direction: column; align-items: center; }
+    .steps::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="counter">1 / 12</div>
+<div id="nav-hint">SCROLL ↓</div>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════════════ SLIDE 1 — COVER ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:700px;height:700px;background:#0a84ff;top:-200px;left:-200px;"></div>
+  <div class="orb" style="width:500px;height:500px;background:#bf5af2;bottom:-100px;right:-100px;"></div>
+  <div class="eyebrow">EEE Senior Design Project — GCET</div>
+  <h1 class="hero-title">Cyber-Hardened<br>Battery Management System</h1>
+  <p class="hero-sub">5-Layer Security Architecture · ML Intrusion Detection · Adaptive Kalman Filtering · Bluetooth Defence Stack</p>
+  <div style="margin-top:40px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+    <span class="chip chip-blue">ESP32 Dual-Core</span>
+    <span class="chip chip-green">BQ76920</span>
+    <span class="chip chip-orange">CAN Bus IDS</span>
+    <span class="chip chip-purple">EKF</span>
+    <span class="chip chip-teal">Bluetooth LE</span>
+    <span class="chip chip-red">Indian Patent</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 2 — PROBLEM ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#ff453a;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.12;"></div>
+  <div class="eyebrow">The Problem</div>
+  <h1 class="hero-title">EV Batteries Are Hackable</h1>
+  <p class="hero-sub">Legacy CAN bus (ISO 11898) has zero authentication. Anyone with OBD-II access — or a nearby Bluetooth device — can spoof battery voltages, replay commands, flood the network, or disconnect the battery pack mid-ride.</p>
+  <div class="grid-3" style="margin-top:32px; max-width:860px;">
+    <div class="card" style="border-color:rgba(255,69,58,0.3);">
+      <span class="card-icon">💉</span>
+      <div class="card-title">Injection</div>
+      <div class="card-desc">Fake sensor readings trick BMS into unsafe operating conditions.</div>
+    </div>
+    <div class="card" style="border-color:rgba(255,69,58,0.3);">
+      <span class="card-icon">🔁</span>
+      <div class="card-title">Replay</div>
+      <div class="card-desc">Old legitimate packets replayed to confuse timing and state logic.</div>
+    </div>
+    <div class="card" style="border-color:rgba(255,69,58,0.3);">
+      <span class="card-icon">📡</span>
+      <div class="card-title">Bluetooth Exploit</div>
+      <div class="card-desc">Unauthenticated wireless commands from 10 m away. No wire needed.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 3 — CONSEQUENCE ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#ff453a;top:-100px;right:-100px;"></div>
+  <div class="eyebrow">Without Our System</div>
+  <div class="big-stat bad">&gt; 31%</div>
+  <div class="stat-label">SoC estimation error under a sustained injection attack on a standard BMS — battery runs to 0% unexpectedly, potential thermal runaway.</div>
+  <div style="margin-top:40px;">
+    <span class="chip chip-red">Jeep Cherokee Hack 2015</span>
+    <span class="chip chip-red">ISO/SAE 21434 Requirement</span>
+    <span class="chip chip-red">1.5M EVs Sold in India 2023</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 4 — THE SOLUTION ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#0a84ff;bottom:-200px;left:-100px;opacity:0.15;"></div>
+  <div class="eyebrow">Our Contribution</div>
+  <h1 class="hero-title">5-Layer Security Stack</h1>
+  <p class="hero-sub">Defence in depth — every layer independently defeats a different attack vector. An adversary must breach all five simultaneously.</p>
+
+  <div class="layer-stack">
+    <div class="layer-row" style="--layer-color:#0a84ff;">
+      <div class="layer-num">L1</div>
+      <div class="layer-body">
+        <div class="layer-name">Secure Bluetooth Access</div>
+        <div class="layer-detail">ECDH key exchange · AES-128 encryption · MAC whitelist · 5-min session timeout</div>
+      </div>
+      <div class="layer-badge">Wireless perimeter</div>
+    </div>
+    <div class="layer-row" style="--layer-color:#bf5af2;">
+      <div class="layer-num">L2</div>
+      <div class="layer-body">
+        <div class="layer-name">Command Authorization</div>
+        <div class="layer-detail">Signed tokens · Challenge-response nonce · Tier 1 / Tier 2 separation</div>
+      </div>
+      <div class="layer-badge">Command gate</div>
+    </div>
+    <div class="layer-row" style="--layer-color:#ff9f0a;">
+      <div class="layer-num">L3</div>
+      <div class="layer-body">
+        <div class="layer-name">CAN Bus IDS</div>
+        <div class="layer-detail">Decision tree · 4 features · 0.35 ms inference · Core 0 ESP32</div>
+      </div>
+      <div class="layer-badge">Network watchdog</div>
+    </div>
+    <div class="layer-row" style="--layer-color:#5ac8fa;">
+      <div class="layer-num">L4</div>
+      <div class="layer-body">
+        <div class="layer-name">Adaptive EKF</div>
+        <div class="layer-detail">R_eff = R_base × exp(10 × S) · Kalman Gain → 0 under attack</div>
+      </div>
+      <div class="layer-badge">Fault-tolerant estimation</div>
+    </div>
+    <div class="layer-row" style="--layer-color:#30d158;">
+      <div class="layer-num">L5</div>
+      <div class="layer-body">
+        <div class="layer-name">Fail-Safe Response</div>
+        <div class="layer-detail">Ignore · Continue power · Alert rider · Log event (500-entry NVS circular buffer)</div>
+      </div>
+      <div class="layer-badge">Graceful degradation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 5 — ARCHITECTURE FLOW ═══════════════════════════════ -->
+<div class="slide">
+  <div class="eyebrow">System Architecture</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">End-to-End Data Flow</h1>
+
+  <div class="arch-flow">
+    <div class="arch-node highlight">📱 Mobile App (Android / iOS)</div>
+    <div class="arch-arrow">↓ Bluetooth LE</div>
+    <div class="arch-node security">🔐 L1 · ECDH Auth + AES-128 + Whitelist</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-node security">🛂 L2 · Command Authorization (Signed Tokens)</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-node">⚡ BMS MCU — ESP32 WROOM-32 (240 MHz)</div>
+    <div class="arch-arrow" style="display:flex;gap:80px;color:var(--dim);">
+      <span>↙ Core 0</span><span>Core 1 ↘</span>
+    </div>
+    <div class="arch-split">
+      <div class="arch-branch">
+        <div class="arch-node ml" style="min-width:200px;">🧠 L3 · CAN IDS<br><small style="color:var(--sub);font-weight:400;">Decision Tree · 0.35 ms</small></div>
+        <div class="arch-arrow">↓ anomaly_score</div>
+      </div>
+      <div class="arch-branch">
+        <div class="arch-node math" style="min-width:200px;">📐 L4 · Adaptive EKF<br><small style="color:var(--sub);font-weight:400;">R_eff modulation</small></div>
+        <div class="arch-arrow">↓ SoC estimate</div>
+      </div>
+    </div>
+    <div class="arch-node" style="border-color:var(--green);">🟢 L5 · Fail-Safe Response (Alert + Log + Continue)</div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-node hw">🔋 Cell Balancing · Hardware Protection · BQ76920</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 6 — LAYER 1 + 2 DETAIL ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#bf5af2;top:-100px;right:-100px;opacity:0.12;"></div>
+  <div class="eyebrow">Layers 1 & 2</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">Bluetooth Security Stack</h1>
+
+  <div class="grid-2" style="max-width:860px;">
+    <div class="card" style="border-color:rgba(10,132,255,0.4);">
+      <span class="card-icon">🔑</span>
+      <div class="card-title">Layer 1 — Secure Access</div>
+      <div class="card-desc" style="margin-bottom:14px;">Who is allowed to connect at all?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:13px;color:var(--text);">✦ <strong>ECDH</strong> key exchange — shared secret never transmitted</div>
+        <div style="font-size:13px;color:var(--text);">✦ <strong>MAC Whitelist</strong> — max 5 authorised devices in NVS flash</div>
+        <div style="font-size:13px;color:var(--text);">✦ <strong>AES-128</strong> encryption on every BLE packet</div>
+        <div style="font-size:13px;color:var(--text);">✦ <strong>5-min timeout</strong> — auto-disconnect on inactivity</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(191,90,242,0.4);">
+      <span class="card-icon">🛡️</span>
+      <div class="card-title">Layer 2 — Command Auth</div>
+      <div class="card-desc" style="margin-bottom:14px;">What are you allowed to do?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:13px;"><span class="chip chip-green" style="padding:2px 8px;">TIER 1</span> Read-only: voltage, SoC, anomaly score</div>
+        <div style="font-size:13px;"><span class="chip chip-red" style="padding:2px 8px;">TIER 2</span> Critical: disconnect, config, firmware OTA</div>
+        <div style="font-size:13px;color:var(--text);">✦ <strong>Signed token</strong> using phone's secure enclave key</div>
+        <div style="font-size:13px;color:var(--text);">✦ <strong>32-byte nonce</strong> prevents replay of captured commands</div>
+        <div style="font-size:13px;color:var(--text);">✦ Timestamp window: ±30 s</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 7 — LAYER 3 IDS ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#ff9f0a;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;"></div>
+  <div class="eyebrow">Layer 3 — CAN IDS</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">AI Intrusion Detection</h1>
+  <p class="hero-sub">Decision Tree classifier running on Core 0 · Classifies every CAN frame in &lt; 0.35 ms</p>
+
+  <div class="grid-2" style="max-width:860px;">
+    <div class="card" style="border-color:rgba(255,159,10,0.3);">
+      <div class="card-title">4 Statistical Features</div>
+      <div style="margin-top:12px; display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--orange);">Δt — Inter-arrival Time</div>
+          <div style="font-size:13px;color:var(--sub);">Flooding makes messages arrive too fast</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--orange);">Frequency</div>
+          <div style="font-size:13px;color:var(--sub);">Normal ≈ 10 msg/s · Attack > 1000 msg/s</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--orange);">Rolling Variance</div>
+          <div style="font-size:13px;color:var(--sub);">Fuzzing creates high-variance random payloads</div>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--orange);">Shannon Entropy</div>
+          <div style="font-size:13px;color:var(--sub);">Injected garbage bytes have high entropy</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(255,159,10,0.3);">
+      <div class="card-title">Performance Metrics</div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--sub);">Accuracy</span>
+          <span style="font-size:22px;font-weight:800;color:var(--green);">99.2%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--sub);">Precision</span>
+          <span style="font-size:22px;font-weight:800;color:var(--green);">98.8%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--sub);">Recall</span>
+          <span style="font-size:22px;font-weight:800;color:var(--green);">99.5%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--sub);">Inference Time</span>
+          <span style="font-size:22px;font-weight:800;color:var(--blue);">0.35 ms</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--sub);">Training Dataset</span>
+          <span style="font-size:22px;font-weight:800;color:var(--blue);">50 K+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 8 — LAYER 4 EKF ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#5ac8fa;bottom:-100px;right:-100px;opacity:0.1;"></div>
+  <div class="eyebrow">Layer 4 — Adaptive EKF</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">Covariance-Modulated Kalman Filter</h1>
+
+  <div class="formula">R<sub>eff</sub> = R<sub>base</sub> × e<sup>10 × S<sub>anomaly</sub></sup></div>
+
+  <div class="grid-3" style="max-width:900px;">
+    <div class="card" style="border-color:rgba(90,200,250,0.3);">
+      <div style="font-size:32px;font-weight:800;color:var(--teal);margin-bottom:8px;">0.0</div>
+      <div class="card-title">S_anomaly = 0</div>
+      <div class="card-desc">No attack · R_eff = R_base · K normal · Measurements trusted fully</div>
+    </div>
+    <div class="card" style="border-color:rgba(255,159,10,0.3);">
+      <div style="font-size:32px;font-weight:800;color:var(--orange);margin-bottom:8px;">148×</div>
+      <div class="card-title">S_anomaly = 0.5</div>
+      <div class="card-desc">Suspicious · R_eff inflated 148× · K near zero · Measurement partially ignored</div>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <div style="font-size:32px;font-weight:800;color:var(--green);margin-bottom:8px;">22K×</div>
+      <div class="card-title">S_anomaly = 1.0</div>
+      <div class="card-desc">Confirmed attack · R_eff = 22,026× · K → 0 · BMS runs on pure Coulomb counting</div>
+    </div>
+  </div>
+
+  <p style="margin-top:24px; font-size:15px; color:var(--sub); max-width:640px;">
+    Mathematical proof: When K → 0, x̂ = x_pred. Corrupted CAN data <strong style="color:var(--text);">completely bypassed</strong>. SoC error bound: <strong style="color:var(--green);">&lt; 1.4%</strong>.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 9 — LAYER 5 FAIL-SAFE ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#30d158;bottom:-150px;left:-150px;opacity:0.1;"></div>
+  <div class="eyebrow">Layer 5 — Fail-Safe Response</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">Graceful Degradation</h1>
+  <p class="hero-sub">Attack detected → 4 simultaneous mandatory actions</p>
+
+  <div class="grid-2" style="max-width:900px;">
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <span class="card-icon">🚫</span>
+      <div class="card-title">Ignore Unauthorised Commands</div>
+      <div class="card-desc">Commands failing Auth L1/L2 or flagged by IDS are silently dropped — no error response (prevents error oracle probing).</div>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <span class="card-icon">⚡</span>
+      <div class="card-title">Keep Supplying Power</div>
+      <div class="card-desc">Battery stays connected if hardware thresholds are safe. Only BQ76920 hardware OVP/UVP or verified Tier-2 command triggers disconnect — never IDS score alone.</div>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <span class="card-icon">🔔</span>
+      <div class="card-title">Alert the Rider</div>
+      <div class="card-desc">OLED flashes "SECURITY ALERT" · Bluetooth push notification with attack type + timestamp · Optional GPIO 32 buzzer.</div>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <span class="card-icon">📋</span>
+      <div class="card-title">Log the Event</div>
+      <div class="card-desc">500-event circular buffer in NVS flash. Attack type, anomaly score, CAN ID, BT MAC. Exportable via app for forensic analysis.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 10 — RESULTS ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#30d158;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.08;"></div>
+  <div class="eyebrow">Validation Results</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">Our System vs Standard BMS</h1>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Attack Scenario</th>
+        <th>Standard BMS (SoC Error)</th>
+        <th>Our 5-Layer System (SoC Error)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>No attack (baseline)</td>
+        <td class="good">0.4%</td>
+        <td class="good">0.3%</td>
+      </tr>
+      <tr>
+        <td>Injection — 30 seconds</td>
+        <td class="bad">12.7%</td>
+        <td class="good">0.9%</td>
+      </tr>
+      <tr>
+        <td>Injection — 5 minutes</td>
+        <td class="bad">31.4%</td>
+        <td class="good">1.2%</td>
+      </tr>
+      <tr>
+        <td>Flooding / DoS</td>
+        <td class="bad">Unable to operate</td>
+        <td class="good">1.1%</td>
+      </tr>
+      <tr>
+        <td>Fuzzing attack</td>
+        <td class="bad">18.9%</td>
+        <td class="good">1.3%</td>
+      </tr>
+      <tr>
+        <td>Bluetooth command spoof</td>
+        <td class="bad">Executed (no auth)</td>
+        <td class="good">Blocked + logged</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 11 — HARDWARE & COST ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#0a84ff;top:-100px;left:-100px;opacity:0.12;"></div>
+  <div class="eyebrow">Engineering Reality</div>
+  <h1 class="hero-title" style="font-size:clamp(28px,4vw,52px);">Built. Measured. Proven.</h1>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-num">₹4–6K</div>
+      <div class="card-title">Total Prototype Cost</div>
+      <div class="card-desc">ESP32 × 2 · BQ76920 · SN65HVD230 · 18650 cells · OLED · MOSFETs · resistors.</div>
+    </div>
+    <div class="card">
+      <div class="card-num">0 GPU</div>
+      <div class="card-title">Zero Cloud Dependency</div>
+      <div class="card-desc">Entire 5-layer stack runs on-device. m2cgen exports decision tree to native C++. No Python runtime on chip.</div>
+    </div>
+    <div class="card">
+      <div class="card-num">99.2%</div>
+      <div class="card-title">IDS Detection Accuracy</div>
+      <div class="card-desc">F1-score 99.1% on 50,000-frame held-out test set. ROC-AUC 0.994.</div>
+    </div>
+    <div class="card">
+      <div class="card-num">0.35 ms</div>
+      <div class="card-title">IDS Inference Latency</div>
+      <div class="card-desc">Every CAN frame classified before the next one arrives at 500 kbps.</div>
+    </div>
+    <div class="card">
+      <div class="card-num">&lt; 1.4%</div>
+      <div class="card-title">SoC Error Under Attack</div>
+      <div class="card-desc">EKF Coulomb-counting fallback maintains accuracy while adversary is active.</div>
+    </div>
+    <div class="card">
+      <div class="card-num">5</div>
+      <div class="card-title">Independent Security Layers</div>
+      <div class="card-desc">Attacker must defeat all 5 layers simultaneously. Defence in depth.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 12 — DELIVERABLES ═══════════════════════════════ -->
+<div class="slide">
+  <div class="orb" style="width:700px;height:700px;background:#0a84ff;bottom:-300px;right:-200px;opacity:0.12;"></div>
+  <div class="eyebrow">Deliverables & Impact</div>
+  <h1 class="hero-title">Patent · Paper · Manual</h1>
+  <p class="hero-sub">Indian Patent Specification filed · IEEE Conference Paper drafted · 18,000+ word project manual complete</p>
+
+  <div class="grid-3" style="margin-top:32px;">
+    <div class="card" style="border-color:rgba(10,132,255,0.3);">
+      <span class="card-icon">📄</span>
+      <div class="card-title">Indian Patent (IPO)</div>
+      <div class="card-desc">Form 2 provisional filed. 5 claims covering IDS-EKF coupling, exponential R_eff formula, and 5-layer BT architecture.</div>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,0.3);">
+      <span class="card-icon">📰</span>
+      <div class="card-title">IEEE Paper</div>
+      <div class="card-desc">Full paper drafted for IEEE INDICON submission. Abstract, methodology, results, and discussion sections complete.</div>
+    </div>
+    <div class="card" style="border-color:rgba(255,159,10,0.3);">
+      <span class="card-icon">📚</span>
+      <div class="card-title">18,000+ Word Manual</div>
+      <div class="card-desc">Beginner-friendly guide covering all 40 chapters — from Ohm's Law to EKF matrix derivation to patent filing.</div>
+    </div>
+  </div>
+
+  <p style="margin-top:36px; font-size:13px; color:var(--dim); letter-spacing:0.05em;">
+    GCET EEE DEPARTMENT · CYBER-HARDENED BMS · 5-LAYER SECURITY ARCHITECTURE
+  </p>
+</div>
+
+</div><!-- end .deck -->
+
+<script>
+  const deck  = document.getElementById('deck');
+  const slides = deck.querySelectorAll('.slide');
+  const total  = slides.length;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  deck.addEventListener('scroll', () => {
+    const scrolled  = deck.scrollTop;
+    const maxScroll = deck.scrollHeight - deck.clientHeight;
+    const pct       = maxScroll > 0 ? (scrolled / maxScroll) * 100 : 0;
+    progress.style.width = pct + '%';
+
+    // current slide index
+    const idx = Math.round(scrolled / deck.clientHeight);
+    counter.textContent = `${Math.min(idx + 1, total)} / ${total}`;
+  });
+
+  // keyboard navigation
+  document.addEventListener('keydown', e => {
+    const cur = deck.scrollTop;
+    const h   = deck.clientHeight;
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      deck.scrollTo({ top: cur + h, behavior: 'smooth' });
+    }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      deck.scrollTo({ top: cur - h, behavior: 'smooth' });
+    }
+  });
+</script>
+</body>
+</html>
