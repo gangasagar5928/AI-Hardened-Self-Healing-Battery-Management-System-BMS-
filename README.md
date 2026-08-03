@@ -52,15 +52,21 @@ graph TD
 │   └── attacker_node.ino
 ├── tcu_node/                 # Telematics Control Unit MQTT bridge
 │   └── tcu_node.ino
-├── simulations/              # MATLAB & Python simulation suite
+├── documents/                # Primary Project Papers, Patent Specs & Manuals
+│   ├── Cyber_Hardened_BMS_IEEE_Paper.docx
+│   ├── Cyber_Hardened_BMS_Patent_Specification.docx
+│   ├── Cyber_Hardened_BMS_Proposal_Deck.pptx
+│   └── Cyber_Hardened_BMS_Manual.docx
+├── docs/                     # Full GitHub Documentation Suite (Wiki, API, Wiring, Flowcharts, Build Guide)
+│   ├── WIKI.md
+│   ├── API_DOCUMENTATION.md
+│   ├── FLOWCHARTS.md
+│   ├── WIRING_DIAGRAMS.md
+│   └── BUILD_GUIDE.md
+├── simulations/              # MATLAB, KiCad, SPICE & Proteus simulation suite
 │   ├── matlab/               # .m scripts & generated PNG plot waveforms
 │   └── kicad/ ltspice/ ...   # Hardware schematics & spice files
-├── docs/                     # Full GitHub Documentation Suite
-│   ├── WIKI.md               # Complete Project Knowledge Base & Math Derivation
-│   ├── API_DOCUMENTATION.md  # CAN Frames, UDS Services, BLE GATT & C++/Python API
-│   ├── FLOWCHARTS.md         # Mermaid Flowcharts & State Machines
-│   ├── WIRING_DIAGRAMS.md    # Pinouts, ASCII & Mermaid Circuit Schematics
-│   └── BUILD_GUIDE.md        # Hardware Assembly, Software Setup & HIL Testing
+├── scripts/                  # Internal document & code generator scripts
 ├── generate_dataset.py       # Live CAN telemetry & feature extraction script
 ├── train_ids.py              # Random Forest training & C++ code export
 └── run_all_simulations.py    # Master python simulation & visualization runner
