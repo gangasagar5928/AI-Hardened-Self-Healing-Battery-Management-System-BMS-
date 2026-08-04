@@ -158,9 +158,16 @@ def generate_expanded_ieee_paper():
     
     P_ieee(doc, "C. SoC Estimation Performance Under Attack\nDuring a 20-second simulated DoS flooding and voltage spoofing attack, baseline unprotected EKF deviates significantly, incurring an SoC error of 18.4%. The proposed Cyber-Hardened EKF limits maximum SoC error to 1.4% (Figure 2 benchmarking). Post-attack re-convergence occurs in under 300 ms (3 EKF cycles).")
 
-    # Section V
-    H_ieee(doc, "V. CONCLUSION & FUTURE SCOPE", 1)
-    P_ieee(doc, "A cyber-hardened BMS combining edge ML classification with adaptive EKF covariance scaling was developed and validated. Future scope includes upgrading physical transceivers to CAN-FD via an SPI-attached MCP2518FD controller.")
+    # Section V: NOVEL EXTENSIONS & ADVANCED FLEET INTELLIGENCE
+    H_ieee(doc, "V. ADVANCED SYSTEM EXTENSIONS & FLEET INTELLIGENCE", 1)
+    P_ieee(doc, "1) Digital Battery Health Passport: A tamper-evident cryptographic SHA-256 digest of battery health logs (SoH trajectory, cycle count, thermal spikes) is computed on-device and published over CAN ID 0x190 to build resale trust infrastructure in second-hand EV markets.")
+    P_ieee(doc, "2) Physical Theft & Cell-Bypass Detection: The Layer 3 IDS is extended with dual physical anomaly heads that detect abrupt pack disconnections (V_pack < 4V under load) and cell-bypassing jumpering (ΔV > 3.5V instantly).")
+    P_ieee(doc, "3) Grid-Aware Adaptive Demand-Response Charging: Upon receiving grid stress alerts (CAN 0x198), the BMS dynamically caps maximum charging current ceiling by 50% without extra hardware.")
+    P_ieee(doc, "4) Privacy-Preserving Federated Learning: Deployed BMS nodes compute local decision tree gradient deltas (ΔW) and broadcast weight deltas over CAN ID 0x188 for central cloud model aggregation without exposing raw driver data.")
+
+    # Section VI
+    H_ieee(doc, "VI. CONCLUSION & FUTURE SCOPE", 1)
+    P_ieee(doc, "A cyber-hardened BMS combining edge ML classification, adaptive EKF covariance scaling, digital battery passports, physical theft detection, grid-aware demand response, and federated learning was developed and validated. Future scope includes upgrading physical transceivers to CAN-FD via MCP2518FD.")
 
     ieee_out = r'c:\Users\mksin\Desktop\AI hardened BMS\Cyber_Hardened_BMS_IEEE_Paper.docx'
     doc.save(ieee_out)

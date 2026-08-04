@@ -1,3 +1,9 @@
+# Personal Local Deliverables
+*.docx
+*.pptx
+*.pdf
+*.html
+
 # Temporary & Lock files
 ~$*.docx
 ~$*.pptx
