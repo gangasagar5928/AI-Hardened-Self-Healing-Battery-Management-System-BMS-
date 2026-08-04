@@ -1,9 +1,15 @@
-# Cyber-Hardened Battery Management System (BMS) for EVs
+<p align="center">
+  <img src="assets/logo.png" width="480" alt="Cyber-Hardened Battery Management System (BMS) Logo">
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32%20FreeRTOS-orange.svg)](https://www.espressif.com/en/products/socs/esp32)
-[![Architecture: 7--Layer Security](https://img.shields.io/badge/Architecture-7--Layer%20Hardened-green.svg)](#7-layer-security-architecture)
-[![Core: Zero-GPU TinyML](https://img.shields.io/badge/TinyML-m2cgen%20C%2B%2B%20%3C0.35ms-red.svg)](#tinyml--algorithmic-innovation)
+<h1 align="center">Cyber-Hardened Battery Management System (BMS) for EVs</h1>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://www.espressif.com/en/products/socs/esp32"><img src="https://img.shields.io/badge/Platform-ESP32%20FreeRTOS-orange.svg" alt="Platform: ESP32"></a>
+  <a href="#7-layer-security-architecture"><img src="https://img.shields.io/badge/Architecture-7--Layer%20Hardened-green.svg" alt="Architecture"></a>
+  <a href="#tinyml--algorithmic-innovation"><img src="https://img.shields.io/badge/TinyML-m2cgen%20C%2B%2B%20%3C0.35ms-red.svg" alt="TinyML"></a>
+</p>
 
 An open-source, production-grade **Self-Healing Cyber-Hardened Battery Management System** designed for Electric Vehicle (EV) 2-wheeler and 3-wheeler applications. The system protects unauthenticated CAN and Bluetooth (BLE) buses against Denial of Service (DoS) floods, false data injection (spoofing), replay attacks, and UDS (ISO 14229) session hijacks.
 
@@ -45,6 +51,8 @@ graph TD
 ## Repository Structure
 
 ```
+├── assets/                   # Repository logo & visual media assets
+│   └── logo.png
 ├── bms_master/               # ESP32 Master Firmware (FreeRTOS Core 0/1, EKF, IDS, SSR driver)
 │   ├── bms_master.ino
 │   └── ids_model.h           # Compiled m2cgen C++ decision tree weights
@@ -52,11 +60,6 @@ graph TD
 │   └── attacker_node.ino
 ├── tcu_node/                 # Telematics Control Unit MQTT bridge
 │   └── tcu_node.ino
-├── documents/                # Primary Project Papers, Patent Specs & Manuals
-│   ├── Cyber_Hardened_BMS_IEEE_Paper.docx
-│   ├── Cyber_Hardened_BMS_Patent_Specification.docx
-│   ├── Cyber_Hardened_BMS_Proposal_Deck.pptx
-│   └── Cyber_Hardened_BMS_Manual.docx
 ├── docs/                     # Full GitHub Documentation Suite (Wiki, API, Wiring, Flowcharts, Build Guide)
 │   ├── WIKI.md
 │   ├── API_DOCUMENTATION.md
@@ -66,7 +69,6 @@ graph TD
 ├── simulations/              # MATLAB, KiCad, SPICE & Proteus simulation suite
 │   ├── matlab/               # .m scripts & generated PNG plot waveforms
 │   └── kicad/ ltspice/ ...   # Hardware schematics & spice files
-├── scripts/                  # Internal document & code generator scripts
 ├── generate_dataset.py       # Live CAN telemetry & feature extraction script
 ├── train_ids.py              # Random Forest training & C++ code export
 └── run_all_simulations.py    # Master python simulation & visualization runner
@@ -114,16 +116,6 @@ Open `bms_master/bms_master.ino` in Arduino IDE 2.x with ESP32 Board Package 3.x
 
 ---
 
-## License & Citation
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for details.
-
-If you use this project in academic work or industry research, please cite:
-```bibtex
-@inproceedings{gcet_cyber_bms_2026,
-  title={Cyber-Hardened Battery Management System for Electric Vehicles Using Edge ML Intrusion Detection and Adaptive EKF Covariance Scaling},
-  author={EEE Department, GCET},
-  year={2026},
-  booktitle={Academic Mini-Project Specification}
-}
-```
