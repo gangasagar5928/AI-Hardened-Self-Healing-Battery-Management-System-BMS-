@@ -26,6 +26,10 @@
 // 3 = Replay Attack (re-send captured legitimate message)
 // 4 = CAN Fuzzing (random ID + random payload)
 // 5 = Mixed attack sequence (all types, cycling)
+// 6 = UDS Session Hijack (0x27 SecurityAccess / 0x3E TesterPresent)
+// 7 = Emergency SSR Cutoff Test (forcing S > 0.90)
+// 8 = Battery Pack Theft & Cell-Bypass Tamper Injection
+// 9 = Grid Peak Demand Stress Signal (0x198)
 int ATTACK_MODE = 5;
 
 // CAN setup

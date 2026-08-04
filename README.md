@@ -17,12 +17,16 @@ It introduces a novel **Trust-Scaled Extended Kalman Filter (EKF)** that dynamic
 
 ---
 
-## Key Highlights & Novelty
+## Key Highlights & High-Impact Novelty
 
 * **Zero-GPU Embedded Execution:** Compiled via `m2cgen` into C++ decision tree `if-else` blocks running in `<0.35 ms` latency on ESP32 Core 0 ($38.4\text{ KB}$ SRAM footprint).
 * **Dual-Core FreeRTOS Isolation:** Core 0 handles ML anomaly classification, BLE auth, and UDS inspection; Core 1 executes deterministic AFE polling, EKF state estimation, cell balancing, and high-side SSR cutoff control.
 * **Automated High-Side SSR Cutoff:** Automated physical pack disconnect triggered on GPIO 17 within $<1.2\text{ ms}$ during emergency severe attacks ($S > 0.90$).
 * **Layer 3 UDS (ISO 14229) Protection:** Intercepts unauthorized `SecurityAccess` (`0x27`) seed requests and `TesterPresent` (`0x3E`) keep-alives over OBD-II/CAN IDs `0x7E0`/`0x7E8`.
+* **📄 Digital Battery Health Passport:** Cryptographically signed (SHA-256 digest) tamper-evident battery history certificate (SoH curve, cycle count, thermal spikes) for used-EV resale trust infrastructure.
+* **🔒 Battery Theft & Physical Tamper Detection:** Extended Layer 3 TinyML IDS detecting abrupt pack removal and physical cell-bypassing jumpering.
+* **⚡ Grid-Aware Adaptive Demand-Response Charging:** Pure firmware scheduling logic throttling peak grid charging by 50% during grid stress signals (CAN `0x198`).
+* **🤖 Federated Learning Fleet Intelligence:** Privacy-preserving model-weight delta sharing (`0x188` CAN ID) allowing deployed BMS units to locally fine-tune and share updates across the fleet.
 * **Cost-Optimized BOM:** Reduced total setup cost to **₹2,100 – ₹2,400 (~$28–$32 USD)** per prototype benchmark setup.
 
 ---

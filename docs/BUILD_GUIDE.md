@@ -1,10 +1,36 @@
-# Cyber-Hardened BMS — Step-by-Step Build & Setup Guide
+# Cyber-Hardened BMS — Step-by-Step Build & Setup Guide (With Beginner Explanations)
 
 This guide provides step-by-step instructions for assembling hardware, setting up the software development environment, compiling firmware, training the TinyML classifier, and executing Hardware-in-the-Loop (HIL) validation tests.
 
 ---
 
-## 1. Prerequisites & Software Toolchain Setup
+## 1. Beginner Guide — Understanding the 4 Advanced Features in Simple Terms
+
+If you are new to battery management systems or cybersecurity, here is a simple, easy-to-understand breakdown of what these 4 new features do and why they matter:
+
+### 📄 Feature 1: Digital Battery Health Passport
+* **What is it?** Think of it like a digital, un-hackable "service record card" or "birth certificate" for the battery.
+* **Why do we need it?** When buying a used EV or second-hand battery in India, buyers have no idea if the previous owner abused the battery or if it's about to die. Sellers can fake numbers.
+* **How does it work?** The BMS continuously logs battery health, charge cycles, and high temperatures, and calculates a 256-bit cryptographic signature (SHA-256 hash). If anyone tries to alter the data, the signature breaks instantly. Buyers can scan a QR code to verify the real battery condition before buying!
+
+### 🔒 Feature 2: Battery Theft & Physical Cell-Bypass Tamper Detection
+* **What is it?** An automatic alarm inside the BMS that detects if someone is physically stealing the battery pack or removing individual cells.
+* **Why do we need it?** Batteries account for 40%–50% of an EV's cost. Battery theft and cell harvesting are rising problems. Thieves sometimes bypass parts of the battery with jumper wires to steal cells.
+* **How does it work?** The TinyML AI monitors sudden voltage drops and electrical jumps. If a thief unplugged the pack while current was flowing, or jumped a cell, the BMS logs a non-erasable theft alert and locks the main power switch (SSR cutoff).
+
+### ⚡ Feature 3: Grid-Aware Adaptive Demand-Response Charging
+* **What is it?** Smart charging logic that protects the city's electricity grid during peak hours.
+* **Why do we need it?** If thousands of EVs plug in at 7:00 PM when everyone turns on ACs and lights, the power grid can overload and cause blackouts.
+* **How does it work?** When the BMS detects peak grid stress, it automatically lowers its charging speed by 50% or postpones fast charging until off-peak hours (e.g. late night). It requires zero extra hardware—just smart software scheduling!
+
+### 🤖 Feature 4: Federated Learning Fleet Intelligence
+* **What is it?** A way for all BMS units on the road to learn about new cyber-attacks together without leaking private driver data.
+* **Why do we need it?** Hackers constantly invent new attacks. A static AI model trained in a lab will miss new threats after a few months.
+* **How does it work?** Instead of sending your personal location or battery logs to a central server, each BMS updates its AI model locally. It only shares small mathematical "lessons" (model weight deltas). The central server combines these lessons to upgrade the entire fleet automatically!
+
+---
+
+## 2. Prerequisites & Software Toolchain Setup
 
 ### Hardware Requirements
 * 2x ESP32 WROOM-32D Development Boards (or 1x ESP32-S3 / bare ICs for cost optimization).
@@ -35,12 +61,12 @@ This guide provides step-by-step instructions for assembling hardware, setting u
 
 4. **Install Python 3.10+ Dependencies:**
    ```bash
-   pip install numpy pandas scikit-learn matplotlib mbedtls m2cgen pyserial
+   pip install numpy pandas scikit-learn matplotlib m2cgen pyserial
    ```
 
 ---
 
-## 2. Low-Cost Optimized BOM Purchasing Reference
+## 3. Low-Cost Optimized BOM Purchasing Reference
 
 Target Total Budget: **₹2,100 – ₹2,400 per setup**
 
@@ -54,7 +80,7 @@ Target Total Budget: **₹2,100 – ₹2,400 per setup**
 
 ---
 
-## 3. Hardware Assembly Instructions
+## 4. Hardware Assembly Instructions
 
 1. **Power Bus Setup:** Connect common ground (`GND`) across Master ESP32, Attacker ESP32, BQ76920 AFE, and CAN Transceivers.
 2. **CAN Bus Setup:**
@@ -73,52 +99,28 @@ Target Total Budget: **₹2,100 – ₹2,400 per setup**
 
 ---
 
-## 4. Firmware Compilation & Flashing
+## 5. Firmware Compilation & Flashing
 
 ### Flash Master Node (`bms_master`)
 1. Connect Master ESP32 via USB.
 2. Open `bms_master/bms_master.ino` in Arduino IDE.
-3. Select Board: `ESP32 Dev Module`, CPU Frequency: `240MHz`, Partition Scheme: `Huge APP (3MB)`.
+3. Select board `ESP32 Dev Module`, Partition Scheme `Huge APP (3MB)`.
 4. Click **Upload**.
 
 ### Flash Attacker Node (`attacker_node`)
 1. Connect Attacker ESP32 via USB.
-2. Open `attacker_node/attacker_node.ino`.
-3. Set `ATTACK_MODE = 5;` for mixed attack generation.
+2. Open `attacker_node/attacker_node.ino` in Arduino IDE.
+3. Set `ATTACK_MODE = 5;` (Mixed 1–7 cycling).
 4. Click **Upload**.
 
 ---
 
-## 5. Machine Learning Dataset Capture & Training
+## 6. HIL Testing & Serial Verification
 
-### 1. Capture CAN Telemetry
-Connect Attacker ESP32 serial port (e.g. `COM3` / `/dev/ttyUSB0`) and run:
-```bash
-python generate_dataset.py COM3
-```
-Let it record ~10,000 frames under clean and injected traffic. Press `Ctrl+C` to save `can_dataset.csv`.
-
-### 2. Train Random Forest & Export C++ Tree
-```bash
-python train_ids.py
-```
-This trains a Random Forest model on features ($\Delta t, f, \text{Var}, H$) and compiles it into `ids_model.h` using `m2cgen`. Recompile `bms_master.ino` to deploy the updated weights.
-
----
-
-## 6. Verification & HIL Testing Protocol
-
-### 1. Run Master Simulation Suite
-```bash
-python run_all_simulations.py
-```
-Verify generated plots in `simulations/matlab/`:
-* `sim_7layer_results.png`
-* `sim_ekf_adaptive_results.png` (SoC tracking error $<1.4\%$)
-* `sim_ids_classifier_results.png` (6-class accuracy $>99.2\%$)
-
-### 2. Oscilloscope Latency Verification
-* Connect scope Channel 1 to CAN `TX` pin.
-* Connect scope Channel 2 to GPIO 17 (`SSR_CUTOFF`).
-* Trigger an emergency injection frame (Attack Mode 7).
-* Verify propagation delay from frame reception to GPIO 17 HIGH is **$< 1.2\text{ ms}$**.
+1. Connect both ESP32 boards over CAN bus.
+2. Open Serial Monitor at `115200` baud.
+3. Observe live output:
+   - `[ATTACK]` notifications.
+   - Dynamic covariance scaling $R_{\text{eff}} = R_{\text{base}} \cdot e^{10 \cdot S}$.
+   - Automated GPIO 17 SSR Cutoff trip when anomaly score $S > 0.90$.
+   - SHA-256 Digital Battery Passport verification digest logged over CAN ID `0x190`.

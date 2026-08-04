@@ -12,6 +12,9 @@ This document specifies the CAN message database, UDS diagnostic protocols, BLE 
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `0x180` | `bms_master` | TCU / Vehicle ECU | $100\text{ ms}$ | 8 Bytes | BMS Telemetry & Anomaly Status |
 | `0x120` | Motor Controller / Charger | `bms_master` | $100\text{ ms}$ | 8 Bytes | Vehicle Load Current & Charge Commands |
+| `0x188` | `bms_master` | Cloud Gateway / Fleet | Asynchronous | 8 Bytes | Federated Learning Model Weight Delta |
+| `0x190` | `bms_master` | Inspector / App | $1000\text{ ms}$ | 8 Bytes | Digital Battery Health Passport Digest |
+| `0x198` | Smart Grid Charger | `bms_master` | $1000\text{ ms}$ | 8 Bytes | Grid Demand-Response Peak Stress Signal |
 | `0x000` | Attacker Node | CAN Bus | Variable | 8 Bytes | DoS High-Frequency Flood Vector |
 | `0x7E0` | OBD-II Diagnostic Tester | `bms_master` | Asynchronous | 8 Bytes | UDS Request Frame |
 | `0x7E8` | `bms_master` | Diagnostic Tester | Asynchronous | 8 Bytes | UDS Response Frame |

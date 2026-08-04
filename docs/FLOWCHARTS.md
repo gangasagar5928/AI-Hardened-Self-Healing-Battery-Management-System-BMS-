@@ -48,109 +48,54 @@ flowchart TD
         W --> X{"Anomaly Score S Range"}
         X -- "S < 0.30" --> Y1["Action 0: Normal Operation"]
         X -- "0.30 <= S < 0.50" --> Y2["Action 1: Reduce Charge Current (PWM)"]
-        X -- "0.50 <= S < 0.70" --> Y3["Action 2: Disable Cell Balancing MOSFETs"]
-        X -- "0.70 <= S < 0.90" --> Y4["Action 3: Limp Home Mode (CAN 0x180 Speed Limit)"]
-        X -- "S >= 0.90" --> Y5["Action 4: High-Side SSR Cutoff (GPIO 17 HIGH)"]
-    end
-
-    subgraph L7 ["Layer 7: Cloud Telematics"]
-        Y1 & Y2 & Y3 & Y4 & Y5 --> Z["MQTT Gateway Forwarding to Node-RED / Grafana"]
+        X -- "0.50 <= S < 0.70" --> Y3["Action 2: Disable Passive Cell Balancing"]
+        X -- "0.70 <= S < 0.90" --> Y4["Action 3: Limp Home Mode (Throttle 50%)"]
+        X -- "S >= 0.90" --> Y5["Action 4: High-Side SSR Pack Isolation (GPIO 17 HIGH)"]
     end
 ```
 
 ---
 
-## 2. FreeRTOS Dual-Core Execution Diagram
+## 2. Advanced Features Flowcharts
 
+### Digital Battery Health Passport Flowchart
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant TWAI as CAN Bus / Transceiver
-    participant C0 as Core 0: SecurityTask (Priority 5, 10ms)
-    participant REG as Inter-Core Shared Memory
-    participant C1 as Core 1: ControlTask (Priority 4, 100ms)
-    participant AFE as TI BQ76920 AFE / I2C
-    participant SSR as High-Side SSR (GPIO 17)
-
-    loop Every 10ms (Core 0 Execution)
-        TWAI->>C0: Receive CAN Frame (twai_receive)
-        C0->>C0: Extract Features (dt, freq, var, entropy)
-        C0->>C0: Check UDS SIDs (0x27 / 0x3E)
-        C0->>C0: Run Random Forest (m2cgen C++ tree)
-        C0->>C0: Calculate score S & R_eff = R_base * exp(10*S)
-        C0->>REG: Atomic Write anomaly_score & ekf_R_scale
-    end
-
-    loop Every 100ms (Core 1 Execution)
-        C1->>AFE: Read Cell Voltages & Current via I2C
-        AFE-->>C1: Raw Voltage & Current ADC Data
-        REG->>C1: Read ekf_R_scale & anomaly_score
-        C1->>C1: Run Adaptive EKF Update (Kalman Gain K scaled)
-        C1->>C1: Update Digital Twin (SoH, Rint, Thermal Pred)
-        C1->>C1: Evaluate Self-Healing Action
-        alt Anomaly Score S >= 0.90
-            C1->>SSR: Set GPIO 17 HIGH (High-Side SSR Pack Cutoff)
-        else Anomaly Score S < 0.90
-            C1->>SSR: Maintain GPIO 17 LOW (Connected)
-        end
-        C1->>TWAI: Publish Status Frame 0x180
-    end
+flowchart LR
+    A["BMS State Data (SoH, Cycle Count, Thermal Spikes)"] --> B["Serialize Log Format: SOH|CYC|RINT|TAMP|RUL"]
+    B --> C["Compute Cryptographic SHA-256 Digest"]
+    C --> D["Store Digest in NVS / MicroSD & Publish CAN 0x190"]
+    D --> E["Resale Inspector / App Scans Passport Digest"]
+    E --> F{"Digest Matches Cloud Record?"}
+    F -- Yes --> G["Verified Untampered Battery — High Resale Trust"]
+    F -- No --> H["Tamper Detected — Flag Abused Battery"]
 ```
 
----
-
-## 3. EKF Covariance Scaling & Gain Suppression Flow
-
-```mermaid
-graph LR
-    A["Raw Cell Voltage Reading (V_meas)"] --> B["Compute Innovation: y = V_meas - V_pred"]
-    C["Layer 3 Anomaly Score S"] --> D["R_eff = R_base * e^(10*S)"]
-    D --> E["Kalman Gain: K = P * H^T / (H * P * H^T + R_eff)"]
-    B --> F["State Update: x_hat = x_pred + K * y"]
-    E --> F
-    
-    subgraph Behavior ["Dynamic Filter Behavior"]
-        G["S = 0.0 (Clean Traffic)"] --> H["R_eff = 0.01 V^2"] --> I["K = Optimal Gain (~0.45)"] --> J["Trust Sensors"]
-        K["S = 1.0 (Cyber Attack)"] --> L["R_eff = 220.26 V^2"] --> M["K -> 0.00002"] --> N["Ignore Sensors / Trust Internal Model"]
-    end
-```
-
----
-
-## 4. Self-Healing State Machine Transitions
-
-```mermaid
-stateDiagram-v2
-    [*] --> HEAL_NORMAL : Power On / System Healthy (S < 0.30)
-    
-    HEAL_NORMAL --> HEAL_REDUCE_CHARGE : Anomaly Score 0.30 <= S < 0.50
-    HEAL_REDUCE_CHARGE --> HEAL_NORMAL : Anomaly Score S < 0.30
-    
-    HEAL_REDUCE_CHARGE --> HEAL_DISABLE_BALANCING : Anomaly Score 0.50 <= S < 0.70
-    HEAL_DISABLE_BALANCING --> HEAL_REDUCE_CHARGE : Anomaly Score 0.30 <= S < 0.50
-    
-    HEAL_DISABLE_BALANCING --> HEAL_LIMP_HOME : Anomaly Score 0.70 <= S < 0.90
-    HEAL_LIMP_HOME --> HEAL_DISABLE_BALANCING : Anomaly Score 0.50 <= S < 0.70
-    
-    HEAL_LIMP_HOME --> HEAL_ISOLATE_CELL : Anomaly Score S >= 0.90 / UDS Hijack
-    HEAL_ISOLATE_CELL --> [*] : High-Side SSR Cutoff Tripped (GPIO 17 HIGH) / Manual Lockout Reset
-```
-
----
-
-## 5. UDS Session Hijack Inspection Flow
-
+### Battery Theft & Physical Cell-Bypass Tamper Detection
 ```mermaid
 flowchart TD
-    A["CAN Message Arrives"] --> B{"CAN ID == 0x7E0 or 0x7E8?"}
-    B -- No --> C["Proceed to Standard Random Forest Feature Extraction"]
-    B -- Yes --> D{"DLC >= 2?"}
-    D -- No --> C
-    D -- Yes --> E{"Data[1] (SID) == 0x27 or 0x3E?"}
-    E -- No --> C
-    E -- Yes --> F["Unauthorized UDS Session Request Detected!"]
-    F --> G["Override Anomaly Score S = 0.96"]
-    G --> H["Scale R_eff = R_base * exp(9.6) = 14,764 * R_base"]
-    H --> I["Drive Kalman Gain K -> 0"]
-    I --> J["Trip High-Side SSR Pack Isolation (GPIO 17 HIGH)"]
+    A["Monitor Pack Voltage & Current"] --> B{"V_pack < 4.0V while I_pack != 0?"}
+    B -- Yes --> C["Flag Abrupt Pack Removal (Theft Vector 1)"]
+    B -- No --> D{"Instantaneous Delta V > 3.5V while I_pack == 0?"}
+    D -- Yes --> E["Flag Cell-Bypass Jumpering (Theft Vector 2)"]
+    D -- No --> F["Normal Operating State"]
+    C & E --> G["Log Non-Resettable Theft Flag to eFuse & Trip GPIO 17 SSR Cutoff"]
+```
+
+### Grid-Aware Demand-Response Charging
+```mermaid
+flowchart TD
+    A["Grid Stress Signal Received (CAN 0x198 / Peak Hours)"] --> B{"Grid Stress Score > 0.50?"}
+    B -- Yes --> C["Activate Demand-Response Mode"]
+    C --> D["Cap Maximum Charge Current: I_max = 0.5 * I_nominal"]
+    B -- No --> E["Maintain Standard Fast Charging"]
+```
+
+### Federated Learning Fleet Intelligence Update Cycle
+```mermaid
+flowchart LR
+    A["Local BMS Node (On-Device IDS)"] --> B["Compute Local Gradient Delta (Delta W)"]
+    B --> C["Broadcast Delta W via CAN 0x188 / BLE"]
+    C --> D["Cloud TCU Gateway Aggregates Fleet Deltas (FedAvg)"]
+    D --> E["Update Global Model Weights (W_global)"]
+    E --> F["OTA Push Updated Model Weights to Fleet"]
 ```
