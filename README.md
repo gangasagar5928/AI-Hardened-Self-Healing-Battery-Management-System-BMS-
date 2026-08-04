@@ -100,19 +100,68 @@ graph TD
 
 ---
 
-## Quick Start
+## Quick Start Guide
 
-### 1. Run Simulations
+Follow these 5 steps to run simulations, train the TinyML model, flash firmware nodes, and verify hardware performance.
+
+### 1. Install Dependencies
+```bash
+# Clone repository
+git clone https://github.com/gangasagar5928/AI-Hardened-Self-Healing-Battery-Management-System-BMS-.git
+cd AI-Hardened-Self-Healing-Battery-Management-System-BMS-
+
+# Install Python requirements
+pip install numpy pandas scikit-learn matplotlib m2cgen pyserial
+```
+
+### 2. Run Master Simulation Suite
+Execute the 5-part simulation suite (Monte Carlo, EKF tracking, TinyML classifier, SPICE waveforms, Digital Twin):
 ```bash
 python run_all_simulations.py
 ```
-Outputs simulation plots into `simulations/matlab/`:
-* `sim_7layer_results.png`
-* `sim_ekf_adaptive_results.png`
-* `sim_ids_classifier_results.png` (6-class confusion matrix)
+Generates 5 high-resolution plot artifacts in `simulations/matlab/`:
+* `sim_7layer_results.png` (7-Layer system resilience & self-healing counts)
+* `sim_ekf_adaptive_results.png` (Adaptive EKF vs Standard EKF SoC tracking under attack)
+* `sim_ids_classifier_results.png` (6-class TinyML confusion matrix)
+* `sim_spice_circuits_results.png` (CAN bus split termination & MOSFET balancing waveforms)
+* `sim_digital_twin_thermal_results.png` (Predictive thermal & SoH degradation trajectory)
 
-### 2. Flashing Master Firmware
-Open `bms_master/bms_master.ino` in Arduino IDE 2.x with ESP32 Board Package 3.x, select `ESP32 Dev Module`, and upload to Master ESP32.
+### 3. Capture Dataset & Train TinyML Classifier
+1. Connect Attacker ESP32 to USB port (e.g. `COM3` on Windows or `/dev/ttyUSB0` on Linux) and log live telemetry:
+   ```bash
+   python generate_dataset.py COM3
+   ```
+2. Train the Random Forest classifier and compile weights into C++ header:
+   ```bash
+   python train_ids.py
+   ```
+   *Generates `bms_master/ids_model.h` containing C++ decision tree logic generated via `m2cgen`.*
+
+### 4. Flashing Embedded Firmware Nodes
+
+Open [Arduino IDE 2.x](https://www.arduino.cc/en/software), install the **ESP32 Board Package (v3.0+)**, select Board `ESP32 Dev Module`, Partition Scheme `Huge APP (3MB)`:
+
+* **BMS Master Node (`bms_master/bms_master.ino`):**
+  - Connect Master ESP32 via USB.
+  - Flashes Core 0 TinyML IDS, Layer 3 UDS Inspector, Layer 4 Adaptive EKF, and GPIO 17 High-Side SSR cutoff driver.
+  - Click **Upload**.
+
+* **Attacker Node (`attacker_node/attacker_node.ino`):**
+  - Connect Attacker ESP32 via USB.
+  - Set `ATTACK_MODE = 5;` to cycle through all 7 attack vectors (DoS, Spoof, Replay, Fuzz, UDS Hijack, Emergency SSR Test).
+  - Click **Upload**.
+
+* **TCU Cloud Gateway (`tcu_node/tcu_node.ino`):**
+  - Set Wi-Fi SSID/password and MQTT broker URL.
+  - Click **Upload** to stream telemetry to Node-RED / Grafana dashboards.
+
+### 5. Hardware-in-the-Loop (HIL) Verification
+1. Connect CAN Bus: Master `CAN TX` (GPIO 5) / `CAN RX` (GPIO 4) to SN65HVD230 transceiver, wired to Attacker Node transceiver (`CANH` to `CANH`, `CANL` to `CANL`).
+2. Open Serial Monitor at `115200` baud.
+3. Observe real-time output:
+   - Dynamic measurement noise covariance scaling ($R_{\text{eff}} = R_{\text{base}} \cdot e^{10 \cdot S}$).
+   - Automated GPIO 17 High-Side SSR cutoff activation within $<1.2\text{ ms}$ when anomaly score $S > 0.90$.
+   - SoC estimation error maintained below $<1.4\%$ during sustained CAN attacks.
 
 ---
 
