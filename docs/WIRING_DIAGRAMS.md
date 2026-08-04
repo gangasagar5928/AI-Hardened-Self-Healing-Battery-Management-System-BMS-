@@ -4,6 +4,14 @@ This document contains complete pinout reference tables, ASCII schematics, and M
 
 ---
 
+## 3D Hardware Blueprint & Cyber-Hardened Architecture
+
+<p align="center">
+  <img src="../assets/blueprint_3d.png" width="800" alt="Cyber-Hardened BMS 3D Hardware Blueprint Architecture">
+</p>
+
+---
+
 ## 1. Master Hardware Pinout Reference Table
 
 ### ESP32 Master Node (`bms_master.ino`) Pinout
